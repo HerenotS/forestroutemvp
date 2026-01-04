@@ -33,6 +33,7 @@ def run_pipeline(
     simplify_m: float = 0.0,
     geojson_geometry: str = "linestring",
     max_waypoints: int = 2000,
+    node_area_ha: float = 2.0,
 ):
     out_rasters = os.path.join(out_dir, "rasters")
     out_routes = os.path.join(out_dir, "routes")
@@ -123,7 +124,10 @@ def run_pipeline(
 
     # Optimize between waypoints (optional)
     if run_astar:
-        optimized_points = optimize_route_segments(final_waypoints_utm, cost, cost_meta)
+        # pass node area via meta so astar can compute coarse spacing
+        cm = cost_meta.copy()
+        cm["node_area_ha"] = node_area_ha
+        optimized_points = optimize_route_segments(final_waypoints_utm, cost, cm)
     else:
         logging.getLogger("frp.cli").info("DEMO: skipping A* optimization")
         optimized_points = final_waypoints_utm
@@ -163,6 +167,7 @@ def main():
     plan_p.add_argument("--geojson-geometry", choices=["points","linestring"], default="linestring", help="GeoJSON geometry type for route")
     plan_p.add_argument("--output-dir", default="out")
     plan_p.add_argument("--max-waypoints", type=int, default=2000, help="Maximum allowed waypoints (auto-increase spacing to respect)")
+    plan_p.add_argument("--node-area-ha", type=float, default=2.0, help="Target node area in hectares for coarse A* (default 2.0)")
 
     demo_p = sub.add_parser("demo")
     demo_p.add_argument("--output-dir", default="out_demo")
@@ -171,6 +176,7 @@ def main():
     demo_p.add_argument("--simplify-m", type=float, default=0.0)
     demo_p.add_argument("--geojson-geometry", choices=["points","linestring"], default="linestring")
     demo_p.add_argument("--max-waypoints", type=int, default=2000)
+    demo_p.add_argument("--node-area-ha", type=float, default=2.0, help="Target node area in hectares for coarse A* (default 2.0)")
 
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -192,6 +198,7 @@ def main():
             waypoint_spacing_m=args.waypoint_spacing_m,
             simplify_m=args.simplify_m,
             geojson_geometry=args.geojson_geometry,
+            node_area_ha=args.node_area_ha,
         )
     elif args.cmd == "demo":
         # lazy import to avoid heavy deps when not running demo
@@ -216,6 +223,7 @@ def main():
             simplify_m=args.simplify_m,
             geojson_geometry=args.geojson_geometry,
             max_waypoints=args.max_waypoints,
+            node_area_ha=args.node_area_ha,
         )
     else:
         parser.print_help()
