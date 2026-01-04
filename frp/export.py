@@ -1,9 +1,7 @@
-import json
 import logging
 from typing import List, Tuple
 
 import geopandas as gpd
-from shapely.geometry import Point, mapping
 import simplekml
 from pyproj import Transformer
 

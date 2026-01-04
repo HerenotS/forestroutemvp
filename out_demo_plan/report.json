@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "nir": "out_demo/inputs/nir.tif",
+    "red": "out_demo/inputs/red.tif",
+    "dem": null
+  },
+  "params": {
+    "resolution": 10.0,
+    "tile_size": 128,
+    "weights": {
+      "slope": 0.5,
+      "ndvi": 0.5
+    }
+  },
+  "outputs": {
+    "ndvi": "out_demo_plan\\rasters\\ndvi.tif",
+    "slope": "out_demo_plan\\rasters\\slope.tif",
+    "cost": "out_demo_plan\\rasters\\cost.tif",
+    "geojson": "out_demo_plan\\routes\\route.geojson",
+    "kml": "out_demo_plan\\routes\\route.kml"
+  }
+}

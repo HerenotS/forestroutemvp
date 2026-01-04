@@ -1,63 +1,98 @@
 Metadata-Version: 2.4
 Name: forestroutemvp
 Version: 0.1.0
-Requires-Python: >=3.10
+Summary: Forest Route MVP — Build NetworkX graphs from route GeoJSON files
+Author-email: HerenotS <author@example.com>
+License: MIT
+Project-URL: Repository, https://github.com/HerenotS/forestroutemvp
+Requires-Python: >=3.8
 Description-Content-Type: text/markdown
+Requires-Dist: geopandas>=0.10.0
+Requires-Dist: networkx>=2.6
+Requires-Dist: shapely>=1.7
+Requires-Dist: rasterio>=1.2
+Requires-Dist: numpy>=1.20
+Requires-Dist: pyproj>=3.0
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0; extra == "dev"
+Requires-Dist: pytest-cov>=2.12; extra == "dev"
+Requires-Dist: black>=21.0; extra == "dev"
+Requires-Dist: flake8>=3.9; extra == "dev"
+Provides-Extra: viz
+Requires-Dist: matplotlib>=3.3; extra == "viz"
 
 # Forestroute Planner (frp) — MVP
 
 Minimal runnable MVP that builds a cost map from local GeoTIFFs and generates an optimized coverage route.
 
-Usage examples:
+## Installation
 
-Run plan (with local rasters):
-
-```bash
-python -m frp plan --aoi aoi.geojson --nir nir.tif --red red.tif --resolution 10 --tile-size 512 --weights "slope=0.5,ndvi=0.5" --output-dir out
-```
-
-Example with node-area (coarse A* node spacing, 2 hectares):
+Create a virtual environment and install runtime + dev deps:
 
 ```bash
-python -m frp plan --aoi aoi.geojson --nir nir.tif --red red.tif --resolution 10 --tile-size 512 --weights "slope=0.5,ndvi=0.5" --node-area-ha 2 --output-dir out
-```
-
-Smoke test commands:
-
-```bash
-python -m frp demo --output-dir out_demo_2ha
-python -m frp plan --aoi out_demo_2ha/inputs/aoi.geojson --nir out_demo_2ha/inputs/nir.tif --red out_demo_2ha/inputs/red.tif --node-area-ha 2 --max-waypoints 200 --output-dir out_demo_2ha_plan
-```
-
-What `--node-area-ha` does:
-
-- Target node area in hectares for coarse A* node spacing. 2 ha ≈ 20,000 m², so spacing ≈ sqrt(20000) ≈ 141.4 m between graph nodes. This controls downsampling of the cost map into a coarse grid used by A*.
-
-**CI**
-
-- Badge: (visible after pushing to GitHub) shows CI status for `main`.
-
-Run tests locally:
-
-```bash
+python -m venv .venv
+# PowerShell: .\.venv\Scripts\Activate.ps1
+# bash: source .venv/bin/activate
+python -m pip install -U pip
 python -m pip install -r requirements.txt
 python -m pip install -r requirements-dev.txt
-pytest -q
+python -m pip install -e .
 ```
 
-Demo mode (no external data):
+## Quick demo
+
+Create synthetic demo inputs and run a fast demo (skips A* by default):
 
 ```bash
 python -m frp demo --output-dir out_demo
 ```
 
-Outputs (written under `out`):
+Run a full plan (uses A* by default):
 
-- out/rasters/ndvi.tif
-- out/rasters/slope.tif
-- out/rasters/cost.tif
-- out/routes/route.geojson
-- out/routes/route.kml
-- out/report.json
+```bash
+python -m frp plan --aoi out_demo/inputs/aoi.geojson \
+    --nir out_demo/inputs/nir.tif --red out_demo/inputs/red.tif \
+    --resolution 10 --tile-size 128 --weights "slope=0.5,ndvi=0.5" \
+    --node-area-ha 2 --max-waypoints 200 --output-dir out_demo_plan
+```
 
-Dependencies are in `requirements.txt`.
+## What `--node-area-ha` does
+
+- Target node area in hectares for coarse A* node spacing.
+- Example: `--node-area-ha 2` means 2 ha = 20,000 m², so node spacing ≈ sqrt(20000) ≈ 141.4 m.
+- The planner downsamples the high-resolution cost raster into a coarse grid using block-min aggregation, then runs A* on that coarse grid. This reduces runtime and memory use while preserving low-cost corridors.
+
+## Graph script
+
+Build a NetworkX graph from an existing `route.geojson` and save as GraphML + GeoJSON for nodes/edges:
+
+```bash
+python scripts/build_route_graph.py --route out_demo/routes/route.geojson --out out_demo/graphs --show
+```
+
+- `--show` will pop up a matplotlib plot (only when run interactively).
+- Output: `out_demo/graphs/route_graph.graphml`, `nodes.geojson`, `edges.geojson`.
+
+## Tests / CI
+
+Run tests locally:
+
+```bash
+python -m pytest -q
+```
+
+A GitHub Actions workflow runs `pytest` on push/PR (`.github/workflows/ci.yml`).
+
+## Outputs
+
+- `out/rasters/ndvi.tif`
+- `out/rasters/slope.tif`
+- `out/rasters/cost.tif`
+- `out/routes/route.geojson`
+- `out/routes/route.kml`
+- `out/report.json`
+
+## Notes
+
+- The package exposes a command-line interface via `python -m frp`.
+- Prefer running inside a virtual environment and from the repository root.

@@ -1,83 +1,77 @@
+"""Tests for build_route_graph module."""
+import sys
 from pathlib import Path
+import tempfile
+import json
 
-from frp.utils import make_demo_data
-from frp.aoi import load_aoi
-from frp.cli import run_pipeline
-import geopandas as gpd
+import pytest
 import networkx as nx
 from shapely.geometry import LineString, Point
 
+# Add scripts dir to path for import
+sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-def _find_route_file(out_dir: Path):
-    # common location
-    p = out_dir / "routes" / "route.geojson"
-    if p.exists():
-        return p
-    # fallback: search
-    for f in out_dir.rglob("route.geojson"):
-        return f
-    return None
+from build_route_graph import coords_from_route, build_graph
 
 
-def test_build_route_graph_from_demo(tmp_path):
-    out_demo = tmp_path / "demo"
-    out_demo_str = str(out_demo)
+def test_coords_from_linestring():
+    """Test extracting coords from a GeoJSON LineString."""
+    import geopandas as gpd
+    
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [[0, 0], [1, 1], [2, 2]]
+            }
+        }]
+    }
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.geojson', delete=False) as f:
+        json.dump(geojson, f)
+        f.flush()
+        gdf = gpd.read_file(f.name)
+        coords = coords_from_route(gdf)
+        assert coords == [(0, 0), (1, 1), (2, 2)]
 
-    # create demo inputs
-    demo_paths = make_demo_data(out_demo_str)
-    aoi = load_aoi(demo_paths["aoi"], None)
 
-    # run pipeline (demo behavior: run_astar=False)
-    weights = {"slope": 0.5, "ndvi": 0.5}
-    run_pipeline(
-        aoi,
-        demo_paths["nir"],
-        demo_paths["red"],
-        None,
-        10.0,
-        512,
-        weights,
-        out_demo_str,
-        run_astar=False,
-        mode="demo",
-        node_area_ha=2.0,
-        time_limit_s=1.0,
-        sweep_spacing_m=None,
-        waypoint_spacing_m=10.0,
-        simplify_m=0.0,
-        geojson_geometry="linestring",
-        max_waypoints=2000,
-    )
+def test_coords_from_points():
+    """Test extracting coords from a GeoJSON Point collection."""
+    import geopandas as gpd
+    
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [0, 0]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [1, 1]}},
+            {"type": "Feature", "geometry": {"type": "Point", "coordinates": [2, 2]}},
+        ]
+    }
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.geojson', delete=False) as f:
+        json.dump(geojson, f)
+        f.flush()
+        gdf = gpd.read_file(f.name)
+        coords = coords_from_route(gdf)
+        assert coords == [(0, 0), (1, 1), (2, 2)]
 
-    route_file = _find_route_file(out_demo)
-    assert route_file is not None and route_file.exists(), "route.geojson not found"
 
-    gdf = gpd.read_file(route_file)
-    coords = []
-    if not gdf.empty:
-        first = gdf.geometry.iloc[0]
-        if isinstance(first, LineString):
-            coords = list(first.coords)
-        else:
-            for geom in gdf.geometry:
-                if isinstance(geom, Point):
-                    coords.append((geom.x, geom.y))
+def test_build_graph():
+    """Test building a NetworkX graph from coordinates."""
+    coords = [(0, 0), (1, 1), (2, 2)]
+    G = build_graph(coords)
+    
+    assert G.number_of_nodes() == 3
+    assert G.number_of_edges() == 2
+    assert all('x' in G.nodes[n] and 'y' in G.nodes[n] for n in G.nodes())
+    assert all('weight' in G[u][v] for u, v in G.edges())
 
-    assert len(coords) >= 2, "Route must contain at least 2 points"
 
-    # build graph
-    G = nx.Graph()
-    for i, (x, y) in enumerate(coords):
-        G.add_node(i, x=float(x), y=float(y))
-        if i > 0:
-            px, py = coords[i - 1]
-            G.add_edge(i - 1, i, weight=float(((x - px) ** 2 + (y - py) ** 2) ** 0.5))
+def test_build_graph_single_point():
+    """Test building a graph from a single coordinate."""
+    coords = [(0, 0)]
+    G = build_graph(coords)
+    
+    assert G.number_of_nodes() == 1
+    assert G.number_of_edges() == 0
 
-    graphs_dir = out_demo / "graphs"
-    graphs_dir.mkdir(parents=True, exist_ok=True)
-    graphml_path = graphs_dir / "route_graph.graphml"
-    nx.write_graphml(G, str(graphml_path))
-
-    assert G.number_of_nodes() >= 2
-    assert G.number_of_edges() >= 1
-    assert graphml_path.exists() and graphml_path.stat().st_size > 0

@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "nir": "test_warnings\\inputs\\nir.tif",
+    "red": "test_warnings\\inputs\\red.tif",
+    "dem": null
+  },
+  "params": {
+    "resolution": 10.0,
+    "tile_size": 512,
+    "weights": {
+      "slope": 0.5,
+      "ndvi": 0.5
+    }
+  },
+  "outputs": {
+    "ndvi": "test_warnings\\rasters\\ndvi.tif",
+    "slope": "test_warnings\\rasters\\slope.tif",
+    "cost": "test_warnings\\rasters\\cost.tif",
+    "geojson": "test_warnings\\routes\\route.geojson",
+    "kml": "test_warnings\\routes\\route.kml"
+  }
+}

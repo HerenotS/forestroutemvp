@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "title": "Route Analysis Report",
+    "polygon_source": "inputs/map.geojson",
+    "output_directory": "example_route_output",
+    "spacing_m": 300,
+    "utm_crs": "EPSG:32614"
+  },
+  "polygon_info": {
+    "type": "Polygon",
+    "area_km2": 2.0515985858530637e-08,
+    "bounds_wgs84": [
+      -99.47018706881265,
+      19.419754893857345,
+      -99.3246408783011,
+      19.611671853484623
+    ],
+    "is_valid": true
+  },
+  "route_info": {
+    "total_waypoints": 2646,
+    "total_distance_km": 825.8319207726205,
+    "avg_segment_length_m": 312.2237885718792,
+    "coordinate_system": "EPSG:32614"
+  },
+  "coverage_analysis": {
+    "grid_spacing_m": 300,
+    "estimated_coverage_lines": 71,
+    "points_per_line": 37
+  }
+}

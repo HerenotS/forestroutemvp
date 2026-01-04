@@ -1,0 +1,9 @@
+{
+  "node_area_ha": 2.0,
+  "aoi_geojson": "out_demo/inputs/aoi.geojson",
+  "polygon_file": "inputs/test_polygon.geojson",
+  "bbox": null,
+  "show_plots": false,
+  "route_geojson": null,
+  "out_dir": "my_graph"
+}

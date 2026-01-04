@@ -1,14 +1,44 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=45", "wheel", "setuptools-scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "forestroutemvp"
 version = "0.1.0"
+description = "Forest Route MVP — Build NetworkX graphs from route GeoJSON files"
 readme = "README.md"
-requires-python = ">=3.10"
-# keep runtime dependencies in requirements.txt to avoid duplication here
+requires-python = ">=3.8"
+authors = [
+    {name = "HerenotS", email = "author@example.com"}
+]
+license = {text = "MIT"}
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["frp*"]
+dependencies = [
+    "geopandas>=0.10.0",
+    "networkx>=2.6",
+    "shapely>=1.7",
+    "rasterio>=1.2",
+    "numpy>=1.20",
+    "pyproj>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.12",
+    "black>=21.0",
+    "flake8>=3.9",
+]
+viz = [
+    "matplotlib>=3.3",
+]
+
+[project.urls]
+Repository = "https://github.com/HerenotS/forestroutemvp"
+
+[tool.setuptools]
+packages = ["frp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

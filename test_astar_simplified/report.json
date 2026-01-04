@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "nir": "test_astar_simplified\\inputs\\nir.tif",
+    "red": "test_astar_simplified\\inputs\\red.tif",
+    "dem": null
+  },
+  "params": {
+    "resolution": 10.0,
+    "tile_size": 512,
+    "weights": {
+      "slope": 0.5,
+      "ndvi": 0.5
+    }
+  },
+  "outputs": {
+    "ndvi": "test_astar_simplified\\rasters\\ndvi.tif",
+    "slope": "test_astar_simplified\\rasters\\slope.tif",
+    "cost": "test_astar_simplified\\rasters\\cost.tif",
+    "geojson": "test_astar_simplified\\routes\\route.geojson",
+    "kml": "test_astar_simplified\\routes\\route.kml"
+  }
+}

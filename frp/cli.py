@@ -2,6 +2,7 @@ import argparse
 import logging
 import json
 import os
+import math
 from typing import Optional
 
 from frp.aoi import load_aoi
@@ -152,8 +153,8 @@ def main():
     parser = argparse.ArgumentParser(description="Forestroute Planner (MVP)")
     sub = parser.add_subparsers(dest="cmd")
     plan_p = sub.add_parser("plan")
-    group = plan_p.add_mutually_exclusive_group(required=True)
-    group.add_argument("--aoi", help="AOI GeoJSON file path")
+    group = plan_p.add_mutually_exclusive_group(required=False)
+    group.add_argument("--aoi", help="AOI GeoJSON file path (auto-detects inputs/map.geojson if not provided)")
     group.add_argument("--bbox", help='bbox string "minLon,minLat,maxLon,maxLat"')
     plan_p.add_argument("--nir", required=True)
     plan_p.add_argument("--red", required=True)
@@ -178,11 +179,34 @@ def main():
     demo_p.add_argument("--max-waypoints", type=int, default=2000)
     demo_p.add_argument("--node-area-ha", type=float, default=2.0, help="Target node area in hectares for coarse A* (default 2.0)")
 
+    # Graph subcommand
+    graph_p = sub.add_parser("graph")
+    g_group = graph_p.add_mutually_exclusive_group(required=True)
+    g_group.add_argument("--aoi", help="AOI GeoJSON file path")
+    g_group.add_argument("--bbox", help='bbox string "minLon,minLat,maxLon,maxLat"')
+    graph_p.add_argument("--node-area-ha", type=float, default=2.0, help="Target node area in hectares for graph spacing (default 2.0)")
+    graph_p.add_argument("--out", default="out_graph", help="Output directory for graph files")
+    graph_p.add_argument("--show", action="store_true", help="Show a quick matplotlib visualization (optional)")
+
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
     if args.cmd == "plan":
-        aoi = load_aoi(args.aoi, args.bbox)
+        # Auto-detect AOI from inputs/map.geojson if not provided
+        aoi_file = args.aoi
+        aoi_bbox = args.bbox
+        
+        if not aoi_file and not aoi_bbox:
+            from pathlib import Path
+            map_file = Path("inputs/map.geojson")
+            if map_file.exists():
+                aoi_file = str(map_file)
+                logger.info("Auto-detected AOI from: %s", aoi_file)
+            else:
+                logger.error("No --aoi or --bbox provided, and inputs/map.geojson not found")
+                return
+        
+        aoi = load_aoi(aoi_file, aoi_bbox)
         weights = parse_weights(args.weights)
         run_pipeline(
             aoi,
@@ -225,5 +249,12 @@ def main():
             max_waypoints=args.max_waypoints,
             node_area_ha=args.node_area_ha,
         )
+    elif args.cmd == "graph":
+        from frp.graph import build_aoi_graph
+
+        aoi = load_aoi(args.aoi, args.bbox)
+        ensure_dir(args.out)
+        G, graphml = build_aoi_graph(aoi_wgs84=aoi, node_area_ha=args.node_area_ha, out_dir=args.out, show=args.show)
+        print(f"spacing_m={math.sqrt(args.node_area_ha*10000):.3f}, nodes={G.number_of_nodes()}, edges={G.number_of_edges()}, crs=EPSG:4326")
     else:
         parser.print_help()

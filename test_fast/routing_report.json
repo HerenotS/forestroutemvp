@@ -1,0 +1,18 @@
+{
+  "polygon_file": "inputs/map.geojson",
+  "output_directory": "test_fast",
+  "routing_type": "grid_waypoints",
+  "parameters": {
+    "spacing_m": 1000.0,
+    "utm_crs": "EPSG:32614"
+  },
+  "results": {
+    "waypoints": 238,
+    "total_distance_km": 247.48528137423858,
+    "coverage_area_km2": 2.0515985858530637e-08
+  },
+  "output_files": {
+    "geojson": "test_fast\\routes\\route.geojson",
+    "kml": "test_fast\\routes\\route.kml"
+  }
+}
