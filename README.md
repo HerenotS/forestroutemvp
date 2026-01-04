@@ -1,1 +1,57 @@
-# forestroutemvp
+# Forestroute Planner (frp) — MVP
+
+Minimal runnable MVP that builds a cost map from local GeoTIFFs and generates an optimized coverage route.
+
+Usage examples:
+
+Run plan (with local rasters):
+
+```bash
+python -m frp plan --aoi aoi.geojson --nir nir.tif --red red.tif --resolution 10 --tile-size 512 --weights "slope=0.5,ndvi=0.5" --output-dir out
+```
+
+Example with node-area (coarse A* node spacing, 2 hectares):
+
+```bash
+python -m frp plan --aoi aoi.geojson --nir nir.tif --red red.tif --resolution 10 --tile-size 512 --weights "slope=0.5,ndvi=0.5" --node-area-ha 2 --output-dir out
+```
+
+Smoke test commands:
+
+```bash
+python -m frp demo --output-dir out_demo_2ha
+python -m frp plan --aoi out_demo_2ha/inputs/aoi.geojson --nir out_demo_2ha/inputs/nir.tif --red out_demo_2ha/inputs/red.tif --node-area-ha 2 --max-waypoints 200 --output-dir out_demo_2ha_plan
+```
+
+What `--node-area-ha` does:
+
+- Target node area in hectares for coarse A* node spacing. 2 ha ≈ 20,000 m², so spacing ≈ sqrt(20000) ≈ 141.4 m between graph nodes. This controls downsampling of the cost map into a coarse grid used by A*.
+
+**CI**
+
+- Badge: (visible after pushing to GitHub) shows CI status for `main`.
+
+Run tests locally:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pip install -r requirements-dev.txt
+pytest -q
+```
+
+Demo mode (no external data):
+
+```bash
+python -m frp demo --output-dir out_demo
+```
+
+Outputs (written under `out`):
+
+- out/rasters/ndvi.tif
+- out/rasters/slope.tif
+- out/rasters/cost.tif
+- out/routes/route.geojson
+- out/routes/route.kml
+- out/report.json
+
+Dependencies are in `requirements.txt`.
