@@ -7,7 +7,12 @@ from shapely.geometry import LineString, Point
 def lines_to_waypoints(lines: List[LineString], spacing: float = 50.0) -> List[Tuple[float, float]]:
     """Convert list of LineString (UTM coords) to a sequence of waypoints (x,y in meters).
 
-    Spacing is distance between consecutive waypoints along a line.
+    Args:
+        lines: List of LineString geometries in UTM coordinates
+        spacing: Distance between consecutive waypoints along a line in meters
+
+    Returns:
+        List of (x, y) tuples representing waypoints in UTM coordinates
     """
     pts = []
     for line in lines:
