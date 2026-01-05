@@ -7,7 +7,7 @@ from typing import Tuple, Dict
 import numpy as np
 import rasterio
 from rasterio.transform import Affine
-from shapely.geometry import mapping, Polygon
+from shapely.geometry import Polygon
 from pyproj import CRS
 
 logger = logging.getLogger("frp.utils")

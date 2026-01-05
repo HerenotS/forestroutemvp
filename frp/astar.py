@@ -66,7 +66,6 @@ def optimize_route_segments(waypoints_utm: List[Tuple[float, float]], cost: np.n
 
     Returns list of UTM (x,y) coordinates for the optimized route.
     """
-    import logging
     from rasterio.transform import rowcol, Affine
 
     logger = logging.getLogger("frp.astar")

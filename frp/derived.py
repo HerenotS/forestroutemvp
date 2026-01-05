@@ -25,10 +25,9 @@ def compute_slope(dem: Optional[np.ndarray], resolution: float) -> np.ndarray:
     `resolution` is horizontal resolution in meters.
     """
     if dem is None:
-        logger = logging.getLogger("frp.derived")
-        logger.info("No DEM provided; returning zero slope array")
-        # return single-value zero when caller expects array; but caller may expect shape
-        return None
+        logger.info("No DEM provided; returning empty slope array")
+        # Return empty array when no DEM provided - caller will handle gracefully
+        return np.array([], dtype="float32")
 
     dzdy, dzdx = np.gradient(dem, resolution, resolution)
     slope_rad = np.arctan((dzdx ** 2 + dzdy ** 2) ** 0.5)
