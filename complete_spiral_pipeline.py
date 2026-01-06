@@ -78,9 +78,9 @@ def astar_spiral_route(G, coords, start_idx):
     visited = set()
     route = []
     
-    print(f"  Running A* search through {len(coords):,} nodes...")
+    print(f"  Running A* search through ALL {len(coords):,} nodes...")
     iterations = 0
-    max_iterations = min(10000, len(coords) * 5)  # Limit iterations for performance
+    max_iterations = len(coords) * 10  # Enough iterations to visit ALL nodes
     
     while open_set and len(route) < len(coords) and iterations < max_iterations:
         iterations += 1
@@ -126,8 +126,33 @@ def main():
     
     # Configuration
     map_file = 'inputs/map.geojson'
-    graph_output = 'spiral_route_output'
+    graph_output = 'final_spiral_output'
     route_output_dir = f'{graph_output}/routes'
+    
+    # Step 0: Clean previous outputs (start from zero)
+    print("\n[STEP 0/5] Cleaning previous outputs (starting fresh)...")
+    import shutil
+    import time
+    if Path(graph_output).exists():
+        try:
+            # Try multiple times in case files are locked
+            for attempt in range(3):
+                try:
+                    shutil.rmtree(graph_output)
+                    print(f"  Removed existing directory: {graph_output}")
+                    break
+                except PermissionError:
+                    if attempt < 2:
+                        print(f"  Retry {attempt + 1}/3: Waiting for file access...")
+                        time.sleep(1)
+                    else:
+                        print(f"  Warning: Could not remove {graph_output} (files may be in use)")
+                        print(f"  Continuing with existing directory...")
+        except Exception as e:
+            print(f"  Warning: Cleanup issue: {e}")
+            print(f"  Continuing anyway...")
+    else:
+        print(f"  No previous output found (clean start)")
     
     # Step 1: Verify input
     print("\n[STEP 1/5] Verifying input file...")
@@ -138,7 +163,7 @@ def main():
     
     # Step 2: Generate graph
     print("\n[STEP 2/5] Generating route graph from map...")
-    cmd = f'python -m frp graph --aoi {map_file} --node-area-ha 2 --out {graph_output}'
+    cmd = f'python -m frp graph --aoi "{map_file}" --node-area-ha 2 --out {graph_output}'
     if not run_command(cmd, "Running 'frp graph' command"):
         return False
     
@@ -161,11 +186,12 @@ def main():
     start_idx = 0  # Start from first node
     route = astar_spiral_route(G, coords, start_idx)
     
-    # Sample route for visualization (too many nodes would be unreadable)
-    step = max(1, len(route) // 2000)
-    sampled_route = route[::step]
+    # Use ALL nodes in the route (no sampling)
+    sampled_route = route
     
-    print(f"  Sampled route: {len(sampled_route):,} waypoints (step={step})")
+    print(f"  Route contains ALL {len(sampled_route):,} nodes visited by A*")
+    if len(route) < len(coords):
+        print(f"  WARNING: Only {len(route)}/{len(coords)} nodes were reached (graph may have disconnected components)")
     
     # Step 4: Export route using FRP export module
     print("\n[STEP 4/5] Exporting route using FRP export module...")
@@ -210,7 +236,7 @@ def main():
     edges.plot(ax=ax, color='lightgray', linewidth=0.3, alpha=0.12, zorder=1)
     nodes.plot(ax=ax, color='gray', markersize=1.5, alpha=0.15, zorder=2)
     
-    # Route path with rainbow colors
+    # Route path with rainbow colors - ENHANCED VISIBILITY
     route_segments = []
     for i in range(len(route_coords) - 1):
         route_segments.append([route_coords[i], route_coords[i + 1]])
@@ -218,14 +244,14 @@ def main():
     n_segments = len(route_segments)
     colors = plt.cm.rainbow(np.linspace(0, 1, n_segments))
     
-    lc = LineCollection(route_segments, colors=colors, linewidths=2.8, alpha=0.94, zorder=4)
+    lc = LineCollection(route_segments, colors=colors, linewidths=3.2, alpha=0.95, zorder=4)  # Thicker
     ax.add_collection(lc)
-    print("  Route path rendered")
+    print("  Route path rendered (enhanced)")
     
-    # Route waypoints with color gradient
+    # Route waypoints with color gradient - LARGER MARKERS
     scatter = ax.scatter(route_coords[:, 0], route_coords[:, 1],
                         c=np.arange(len(route_coords)), cmap='rainbow',
-                        s=35, alpha=0.96, zorder=5, edgecolors='white', linewidths=0.6)
+                        s=40, alpha=0.98, zorder=5, edgecolors='white', linewidths=0.7)  # Larger
     
     # Start and end points
     start_point = route_coords[0]
@@ -237,9 +263,9 @@ def main():
     
     print("  Waypoints marked")
     
-    # Directional arrows
+    # Directional arrows - MORE VISIBLE
     print("  Adding directional arrows...")
-    arrow_interval = max(1, n_segments // 70)
+    arrow_interval = max(1, n_segments // 100)  # More arrows for better visibility
     arrow_count = 0
     
     for i in range(0, n_segments, arrow_interval):
@@ -252,19 +278,23 @@ def main():
         length = np.sqrt(dx**2 + dy**2)
         
         if length > 1e-8:
-            scale = min(length * 0.7, 0.0005)
+            scale = min(length * 0.8, 0.0006)  # Larger arrows
             dx_scaled = (dx / length) * scale
             dy_scaled = (dy / length) * scale
             
             arrow = FancyArrowPatch(
                 (x1, y1), (x1 + dx_scaled, y1 + dy_scaled),
-                arrowstyle='->', mutation_scale=24, linewidth=2.3,
-                color=colors[min(i, len(colors)-1)], alpha=0.88, zorder=7
+                arrowstyle='->', 
+                mutation_scale=26,  # Larger arrow heads
+                linewidth=2.5,  # Thicker arrows
+                color=colors[min(i, len(colors)-1)], 
+                alpha=0.92,  # More opaque
+                zorder=7
             )
             ax.add_patch(arrow)
             arrow_count += 1
     
-    print(f"  {arrow_count} arrows added")
+    print(f"  {arrow_count} arrows added (enhanced visibility)")
     
     # Labels and formatting
     ax.set_title(

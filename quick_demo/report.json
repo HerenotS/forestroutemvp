@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "nir": "quick_demo\\inputs\\nir.tif",
+    "red": "quick_demo\\inputs\\red.tif",
+    "dem": null
+  },
+  "params": {
+    "resolution": 10.0,
+    "tile_size": 512,
+    "weights": {
+      "slope": 0.5,
+      "ndvi": 0.5
+    }
+  },
+  "outputs": {
+    "ndvi": "quick_demo\\rasters\\ndvi.tif",
+    "slope": "quick_demo\\rasters\\slope.tif",
+    "cost": "quick_demo\\rasters\\cost.tif",
+    "geojson": "quick_demo\\routes\\route.geojson",
+    "kml": "quick_demo\\routes\\route.kml"
+  }
+}

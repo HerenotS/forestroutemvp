@@ -1,0 +1,22 @@
+{
+  "inputs": {
+    "nir": "my_first_route\\inputs\\nir.tif",
+    "red": "my_first_route\\inputs\\red.tif",
+    "dem": null
+  },
+  "params": {
+    "resolution": 10.0,
+    "tile_size": 512,
+    "weights": {
+      "slope": 0.5,
+      "ndvi": 0.5
+    }
+  },
+  "outputs": {
+    "ndvi": "my_first_route\\rasters\\ndvi.tif",
+    "slope": "my_first_route\\rasters\\slope.tif",
+    "cost": "my_first_route\\rasters\\cost.tif",
+    "geojson": "my_first_route\\routes\\route.geojson",
+    "kml": "my_first_route\\routes\\route.kml"
+  }
+}
