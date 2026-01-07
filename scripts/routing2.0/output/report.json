@@ -1,0 +1,27 @@
+{
+  "start_point": {
+    "node": "(18, 1440)",
+    "elevation": 2204.4983940967036
+  },
+  "end_point": {
+    "node": "(960, 717)",
+    "elevation": 2799.721862591766
+  },
+  "path_length_nodes": 315,
+  "total_distance_m": 13782.90603990072,
+  "weights_used": {
+    "cost": 0.3,
+    "slope": 0.5,
+    "ndvi": 0.1,
+    "distance": 0.1
+  },
+  "files": {
+    "route_geojson": "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\scripts\\routing2.0\\output\\route.geojson",
+    "inputs": [
+      "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\scripts\\routing2.0\\output\\inputs\\cost.tif",
+      "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\scripts\\routing2.0\\output\\inputs\\elevation.tif",
+      "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\scripts\\routing2.0\\output\\inputs\\ndvi.tif",
+      "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\scripts\\routing2.0\\output\\inputs\\slope.tif"
+    ]
+  }
+}

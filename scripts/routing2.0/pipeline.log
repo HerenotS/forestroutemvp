@@ -1,0 +1,17 @@
+2026-01-07 12:46:26,423 - pipeline_full - INFO - === Starting Full Routing Pipeline ===
+2026-01-07 12:46:26,575 - pipeline_full - INFO - Loaded AOI from C:\Users\rasan\EDIFY\forestroutemvp\inputs\map.geojson
+2026-01-07 12:46:26,576 - pipeline_full - INFO - Generating 3D terrain models based on AOI coordinates...
+2026-01-07 12:46:27,969 - pipeline_full - INFO - Terrain data generated in C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\inputs
+2026-01-07 12:46:27,970 - pipeline_full - INFO - Building Multi-Dimensional Graph...
+2026-01-07 12:46:27,971 - frp.graph - INFO - Loading cost raster: C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\inputs\cost.tif
+2026-01-07 12:46:28,257 - frp.graph - INFO - Building graph with spacing=3px, connectivity=8-way
+2026-01-07 12:47:30,223 - frp.graph - INFO - Graph built: 227859 nodes, 908503 edges
+2026-01-07 12:47:30,244 - pipeline_full - INFO - identifying optimal start/end points...
+2026-01-07 12:47:31,313 - pipeline_full - INFO - Routing from (18, 1440) (Elev: 2204.5m) to (960, 717) (Elev: 2799.7m)
+2026-01-07 12:47:31,314 - pipeline_full - INFO - Running A* with weights: {'cost': 0.3, 'slope': 0.5, 'ndvi': 0.1, 'distance': 0.1}
+2026-01-07 12:47:34,786 - pipeline_full - INFO - Path found: 315 nodes
+2026-01-07 12:47:34,786 - pipeline_full - INFO - Generating outputs...
+2026-01-07 12:47:34,838 - pyogrio._io - INFO - Created 1 records
+2026-01-07 12:49:18,817 - frp.viz - INFO - Saved 2D visualization to C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualization_2d.png
+2026-01-07 12:49:20,043 - frp.viz - INFO - Saved 3D visualization to C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualization_3d.png
+2026-01-07 12:49:20,047 - pipeline_full - INFO - Pipeline complete. Outputs in C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output

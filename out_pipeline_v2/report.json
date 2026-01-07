@@ -1,0 +1,17 @@
+{
+  "steps": 35,
+  "start": [
+    175,
+    20
+  ],
+  "end": [
+    15,
+    50
+  ],
+  "weights": {
+    "cost": 0.3,
+    "slope": 0.4,
+    "ndvi": 0.1,
+    "distance": 0.2
+  }
+}
