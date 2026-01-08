@@ -1,6 +1,6 @@
 # Routing 2.0 - 3D Visualization and Multi-dimensional Graph Report
 
-**Generated**: 2026-01-07 17:44:43
+**Generated**: 2026-01-07 20:20:50
 
 ---
 
@@ -61,10 +61,10 @@ The 3D visualization transforms the cost raster into a terrain-like surface wher
 - Gradient direction indicates optimal movement direction toward lower cost
 
 ### Generated Model Statistics
-- **Priority Anchor Location**: Row 10, Col 1
-- **Priority Anchor Cost**: 0.0000
-- **Cost Range**: 0.0000 to 0.5000
-- **Raster Shape**: (228, 130)
+- **Priority Anchor Location**: Row 0, Col 2
+- **Priority Anchor Cost**: 0.1000
+- **Cost Range**: 2555.0000 to 3859.0000
+- **Raster Shape**: (111, 152)
 
 ---
 
@@ -99,8 +99,8 @@ The graph supports multi-factor A* pathfinding where edge weights can be
 customized based on different factor priorities (cost-focused, slope-aware, etc.)
 
 ### Generated Graph Statistics
-- **Total Nodes**: 1195
-- **Total Edges**: 4565
+- **Total Nodes**: 713
+- **Total Edges**: 2692
 - **Node Spacing**: 10 pixels
 - **Connectivity**: 8-way
 - **Has Slope Data**: True
@@ -111,40 +111,40 @@ customized based on different factor priorities (cost-focused, slope-aware, etc.
 ## Priority Analysis
 
 ### Priority Anchor (Global Minimum Cost)
-- **Location**: Row 10, Col 1
-- **Cost Value**: 0.0000
+- **Location**: Row 0, Col 2
+- **Cost Value**: 0.1000
 - **Description**: Global minimum cost point - optimal priority anchor
 
 ### Distribution Statistics
 | Metric | Cost | Priority |
 |--------|------|----------|
-| Min | 0.0000 | 0.0000 |
-| Max | 0.5000 | 1.0000 |
-| Mean | 0.4254 | 0.1493 |
-| Std Dev | 0.1396 | 0.2792 |
+| Min | 0.1000 | 0.0000 |
+| Max | 1.0000 | 1.0000 |
+| Mean | 0.2841 | 0.7954 |
+| Std Dev | 0.1718 | 0.1908 |
 
 ### High Cost Regions (Obstacles)
-- **Threshold**: 0.5000 (P90)
-- **Number of Regions**: 1
-- **Total High-Cost Pixels**: 90583 (76.40%)
+- **Threshold**: 0.5289 (P90)
+- **Number of Regions**: 767
+- **Total High-Cost Pixels**: 6730 (10.01%)
 
 ### Factor Correlations with Cost
-- **Slope-Cost Correlation**: 0.0000
-- **NDVI-Cost Correlation**: -1.0000
+- **Slope-Cost Correlation**: 0.9998
+- **NDVI-Cost Correlation**: 0.0000
 
 ---
 
 ## Route Optimization Results
 
 ### Path Summary
-- **Path Length**: 20 nodes
-- **Total Weighted Cost**: 7.8820
-- **Total Distance**: 2148.5281 units
+- **Path Length**: 2 nodes
+- **Total Weighted Cost**: 0.3931
+- **Total Distance**: 0.0095 units
 
 ### Terrain Statistics Along Path
-- **Average Cost**: 0.2614
-- **Average Slope**: 0.0000°
-- **Nodes Explored**: 74
+- **Average Cost**: 0.5500
+- **Average Slope**: 27.7039°
+- **Nodes Explored**: 28
 
 ### Factor Weights Used
 - **Cost**: 0.40
@@ -156,11 +156,11 @@ customized based on different factor priorities (cost-focused, slope-aware, etc.
 
 | Strategy | Path Length | Total Cost | Distance | Avg Slope |
 |----------|-------------|------------|----------|----------|
-| balanced | 20 | 8.6107 | 2148.5281 | 0.0000° |
-| cost_focused | 20 | 6.4246 | 2148.5281 | 0.0000° |
-| slope_aware | 20 | 3.9410 | 2148.5281 | 0.0000° |
-| vegetation_aware | 20 | 7.9362 | 2148.5281 | 0.0000° |
-| shortest_path | 20 | 16.3354 | 2148.5281 | 0.0000° |
+| balanced | 2 | 0.3539 | 0.0095 | 27.7039° |
+| cost_focused | 2 | 0.4716 | 0.0095 | 27.7039° |
+| slope_aware | 2 | 0.5044 | 0.0095 | 27.7039° |
+| vegetation_aware | 2 | 0.3216 | 0.0095 | 27.7039° |
+| shortest_path | 2 | 0.1416 | 0.0095 | 27.7039° |
 
 ### Strategy Descriptions
 - **Balanced**: Equal weight to all factors (cost, slope, NDVI, distance)
@@ -173,13 +173,13 @@ customized based on different factor priorities (cost-focused, slope-aware, etc.
 
 ## Generated Output Files
 
-- **3d_model**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\3d_model\cost_terrain_3d.html`
-- **graph_graphml**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\graph\multidim_graph.graphml`
-- **graph_json**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\graph\multidim_graph.json`
-- **priority_map_2d**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualizations\priority_map_2d.png`
-- **priority_heatmap**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualizations\priority_heatmap.png`
-- **network_3d**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualizations\network_3d.html`
-- **strategy_comparison**: `C:\Users\rasan\EDIFY\forestroutemvp\scripts\routing2.0\output\visualizations\strategy_comparison.png`
+- **3d_model**: `test_real_elevation\output\3d_model\cost_terrain_3d.html`
+- **graph_graphml**: `test_real_elevation\output\graph\multidim_graph.graphml`
+- **graph_json**: `test_real_elevation\output\graph\multidim_graph.json`
+- **priority_map_2d**: `test_real_elevation\output\visualizations\priority_map_2d.png`
+- **priority_heatmap**: `test_real_elevation\output\visualizations\priority_heatmap.png`
+- **network_3d**: `test_real_elevation\output\visualizations\network_3d.html`
+- **strategy_comparison**: `test_real_elevation\output\visualizations\strategy_comparison.png`
 
 ---
 

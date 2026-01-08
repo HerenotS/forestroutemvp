@@ -193,33 +193,52 @@ def run_pipeline(
     # Find raster files
     rasters = find_raster_files(raster_dir)
     if "cost" not in rasters and "elevation" not in rasters:
-        logger.info("[Auto-Gen] Rasters specific to this AOI not found. generating synthetic terrain data specific to these coordinates...")
-        # Add local helper or direct logic
+        logger.info("[Auto-Gen] Rasters not found. Fetching REAL elevation data from OpenTopoData API...")
+        # Use real elevation API instead of synthetic terrain
         try:
-           from pipeline_full import generate_synthetic_terrain
+           from real_elevation import generate_real_terrain
            
-           # Get bounds tuple
-           poly_bounds = polygon_data["bounds"]
-           bounds_tuple = (
-               poly_bounds["min_lon"], 
-               poly_bounds["min_lat"],
-               poly_bounds["max_lon"],
-               poly_bounds["max_lat"]
-           )
+           # Get polygon coordinates for real elevation fetch
+           polygon_coords = polygon_data.get("coordinates", [])
            
-           gen_out = Path(raster_dir)
-           gen_out.mkdir(parents=True, exist_ok=True)
+           if polygon_coords:
+               gen_out = Path(raster_dir)
+               gen_out.mkdir(parents=True, exist_ok=True)
+               
+               # Fetch real SRTM elevation data at 100m resolution (faster than 10m)
+               gen_res = generate_real_terrain(
+                   polygon_coords=polygon_coords,
+                   output_dir=str(gen_out),
+                   resolution_meters=100,  # 100m resolution for reasonable API usage
+                   dataset="srtm30m"
+               )
+               logger.info(f"  Generated REAL elevation rasters in {raster_dir}")
+               logger.info(f"  Elevation range: {gen_res.get('elevation_range', 'N/A')}")
+               
+               # Refresh find
+               rasters = find_raster_files(raster_dir)
+           else:
+               logger.warning("  No polygon coordinates available for terrain generation")
            
-           gen_res = generate_synthetic_terrain(bounds_tuple, gen_out)
-           logger.info(f"  Generated synthetic rasters in {raster_dir}")
-           
-           # Refresh find
-           rasters = find_raster_files(raster_dir)
-           
-        except ImportError:
-            logger.warning("Could not import generate_synthetic_terrain. Continuing with existing files if any.")
+        except ImportError as e:
+            logger.warning(f"Could not import real_elevation: {e}. Trying synthetic fallback...")
+            try:
+                from pipeline_full import generate_synthetic_terrain
+                poly_bounds = polygon_data["bounds"]
+                bounds_tuple = (
+                    poly_bounds["min_lon"], 
+                    poly_bounds["min_lat"],
+                    poly_bounds["max_lon"],
+                    poly_bounds["max_lat"]
+                )
+                gen_out = Path(raster_dir)
+                gen_out.mkdir(parents=True, exist_ok=True)
+                generate_synthetic_terrain(bounds_tuple, gen_out)
+                rasters = find_raster_files(raster_dir)
+            except Exception as e2:
+                logger.error(f"Synthetic fallback also failed: {e2}")
         except Exception as e:
-             logger.error(f"Failed to generate terrain: {e}")
+             logger.error(f"Failed to generate real terrain: {e}")
              
     if "cost" not in rasters:
         logger.error(f"  Cost raster not found in: {raster_dir}")
@@ -238,6 +257,7 @@ def run_pipeline(
             output_path=str(model_output_file),
             slope_path=rasters.get("slope"),
             ndvi_path=rasters.get("ndvi"),
+            elevation_path=rasters.get("elevation"),
             subsample=subsample_3d,
             use_plotly=True
         )

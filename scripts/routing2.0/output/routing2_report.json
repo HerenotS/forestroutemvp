@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-07T13:02:38.636528",
+  "timestamp": "2026-01-07T17:44:36.839795",
   "inputs": {
     "config": "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\config.json",
     "polygon": "C:\\Users\\rasan\\EDIFY\\forestroutemvp\\inputs\\map.geojson",
@@ -313,7 +313,7 @@
   },
   "route_result": {
     "start_node": 26,
-    "goal_node": 1158,
+    "goal_node": 201,
     "path": [
       26,
       53,
@@ -322,52 +322,28 @@
       134,
       161,
       188,
-      215,
-      242,
-      269,
-      296,
-      323,
-      350,
-      377,
-      404,
-      430,
-      456,
-      482,
-      508,
-      534,
-      560,
-      586,
-      612,
-      638,
-      664,
-      690,
-      716,
-      742,
-      768,
-      794,
-      820,
-      846,
-      872,
-      898,
-      924,
-      950,
-      976,
-      1002,
-      1028,
-      1054,
-      1080,
-      1106,
-      1132,
-      1158
+      189,
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200,
+      201
     ],
-    "total_cost": 20.638897196172245,
+    "total_cost": 7.8819857530162025,
     "statistics": {
-      "path_length": 44,
-      "total_weighted_cost": 20.638897196172245,
-      "total_distance": 4879.898987322333,
+      "path_length": 20,
+      "total_weighted_cost": 7.8819857530162025,
+      "total_distance": 2148.528137423857,
       "average_slope": 0.0,
-      "average_cost": 0.39927845084389973,
-      "nodes_explored": 162,
+      "average_cost": 0.26142929572808116,
+      "nodes_explored": 74,
       "weights_used": {
         "cost": 0.4,
         "slope": 0.2,
@@ -986,7 +962,7 @@
   },
   "strategy_comparison": {
     "start": 26,
-    "goal": 1158,
+    "goal": 201,
     "strategies": {
       "balanced": {
         "weights": {
@@ -995,9 +971,9 @@
           "ndvi": 0.25,
           "distance": 0.25
         },
-        "path_length": 44,
-        "total_cost": 21.506378148643382,
-        "total_distance": 4879.898987322333,
+        "path_length": 20,
+        "total_cost": 8.610693036561866,
+        "total_distance": 2148.528137423857,
         "average_slope": 0.0
       },
       "cost_focused": {
@@ -1007,9 +983,9 @@
           "ndvi": 0.1,
           "distance": 0.1
         },
-        "path_length": 44,
-        "total_cost": 18.903935291229967,
-        "total_distance": 4879.898987322333,
+        "path_length": 20,
+        "total_cost": 6.424571185924872,
+        "total_distance": 2148.528137423857,
         "average_slope": 0.0
       },
       "slope_aware": {
@@ -1019,9 +995,9 @@
           "ndvi": 0.1,
           "distance": 0.1
         },
-        "path_length": 44,
-        "total_cost": 10.319448598086122,
-        "total_distance": 4879.898987322333,
+        "path_length": 20,
+        "total_cost": 3.9409928765081013,
+        "total_distance": 2148.528137423857,
         "average_slope": 0.0
       },
       "vegetation_aware": {
@@ -1031,9 +1007,9 @@
           "ndvi": 0.6,
           "distance": 0.1
         },
-        "path_length": 44,
-        "total_cost": 20.348223265617374,
-        "total_distance": 4879.898987322333,
+        "path_length": 20,
+        "total_cost": 7.936159953095778,
+        "total_distance": 2148.528137423857,
         "average_slope": 0.0
       },
       "shortest_path": {
@@ -1043,9 +1019,9 @@
           "ndvi": 0.1,
           "distance": 0.7
         },
-        "path_length": 44,
-        "total_cost": 37.881945183391345,
-        "total_distance": 4879.898987322333,
+        "path_length": 20,
+        "total_cost": 16.335446039167895,
+        "total_distance": 2148.528137423857,
         "average_slope": 0.0
       }
     }

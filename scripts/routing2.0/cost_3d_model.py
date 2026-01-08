@@ -50,6 +50,8 @@ def create_3d_surface_data(
     cost: np.ndarray,
     slope: Optional[np.ndarray] = None,
     ndvi: Optional[np.ndarray] = None,
+    elevation: Optional[np.ndarray] = None,
+    transform: Any = None,
     subsample: int = 1
 ) -> Dict[str, Any]:
     """Prepare data for 3D surface visualization.
@@ -58,6 +60,8 @@ def create_3d_surface_data(
         cost: Cost raster array
         slope: Optional slope raster array
         ndvi: Optional NDVI raster array
+        elevation: Optional elevation raster array (for true Z axis)
+        transform: Rasterio transform object for pixel->coord conversion
         subsample: Subsampling factor for large rasters (e.g., 2 = every 2nd pixel)
         
     Returns:
@@ -72,15 +76,40 @@ def create_3d_surface_data(
             slope = slope[::subsample, ::subsample]
         if ndvi is not None:
             ndvi = ndvi[::subsample, ::subsample]
+        if elevation is not None:
+            elevation = elevation[::subsample, ::subsample]
         rows, cols = cost.shape
     
     # Create coordinate grids
-    x = np.arange(cols)
-    y = np.arange(rows)
-    X, Y = np.meshgrid(x, y)
+    # Use transform if available to get real world coordinates
+    if transform:
+        # Extract affine params from transform (Affine object)
+        a, b, c, d, e, f = transform.a, transform.b, transform.c, transform.d, transform.e, transform.f
+        
+        # Adjust step size by subsample
+        step_x = a * subsample
+        step_y = e * subsample
+        
+        # Origin (top-left)
+        x_min = c
+        y_max = f
+        
+        # Generate axes
+        x_axis = x_min + np.arange(cols) * step_x
+        y_axis = y_max + np.arange(rows) * step_y
+        
+        X, Y = np.meshgrid(x_axis, y_axis)
+    else:
+        # Fallback to pixel coords
+        x = np.arange(cols)
+        y = np.arange(rows)
+        X, Y = np.meshgrid(x, y)
     
-    # Z = cost values (elevation)
-    Z = np.nan_to_num(cost, nan=0.0)
+    # Z = elevation if available, else cost
+    if elevation is not None:
+        Z = np.nan_to_num(elevation, nan=0.0)
+    else:
+        Z = np.nan_to_num(cost, nan=0.0)
     
     # Normalize Z for better visualization
     z_min, z_max = np.nanmin(Z), np.nanmax(Z)
@@ -93,6 +122,7 @@ def create_3d_surface_data(
         "X": X,
         "Y": Y,
         "Z": Z,
+        "cost": np.nan_to_num(cost, nan=0.0), # Added explicit cost array
         "Z_normalized": Z_norm,
         "cost_min": float(z_min),
         "cost_max": float(z_max),
@@ -140,6 +170,7 @@ def generate_3d_plotly_html(
         x=X,
         y=Y,
         z=Z,
+        surfacecolor=surface_data.get("cost"), # Use cost for color (independent of Z height)
         colorscale=[
             [0.0, "rgb(0, 100, 0)"],      # Green (low cost - valleys)
             [0.3, "rgb(255, 255, 0)"],    # Yellow
@@ -161,13 +192,18 @@ def generate_3d_plotly_html(
     fig.add_trace(surface1, row=1, col=1)
     
     # Add marker for minimum cost point (priority anchor)
+    # Use actual GPS coordinates from the X/Y arrays
+    anchor_x = float(X[min_row, min_col])
+    anchor_y = float(Y[min_row, min_col])
+    anchor_z = float(Z[min_row, min_col])
+    
     fig.add_trace(go.Scatter3d(
-        x=[min_col],
-        y=[min_row],
-        z=[Z[min_row, min_col] + 0.05 * (surface_data["cost_max"] - surface_data["cost_min"])],
+        x=[anchor_x],
+        y=[anchor_y],
+        z=[anchor_z + 20],  # Slightly above surface
         mode='markers+text',
         marker=dict(size=10, color='cyan', symbol='diamond'),
-        text=['Priority Anchor (Min Cost)'],
+        text=['Priority Anchor'],
         textposition='top center',
         name='Priority Anchor',
         showlegend=True
@@ -193,11 +229,11 @@ def generate_3d_plotly_html(
     )
     fig.add_trace(surface2, row=1, col=2)
     
-    # Add priority anchor marker to second view
+    # Add priority anchor marker to second view (use GPS coords)
     fig.add_trace(go.Scatter3d(
-        x=[min_col],
-        y=[min_row],
-        z=[Z_inverted[min_row, min_col] + 0.05 * (surface_data["cost_max"] - surface_data["cost_min"])],
+        x=[anchor_x],
+        y=[anchor_y],
+        z=[float(Z_inverted[min_row, min_col]) + 20],
         mode='markers',
         marker=dict(size=10, color='cyan', symbol='diamond'),
         name='Highest Priority',
@@ -207,22 +243,22 @@ def generate_3d_plotly_html(
     # Update layout
     fig.update_layout(
         title=dict(
-            text=f"{title}<br><sub>Min Cost: {surface_data['cost_min']:.4f} at ({min_point[0]}, {min_point[1]}) | Max Cost: {surface_data['cost_max']:.4f}</sub>",
+            text=f"{title}<br><sub>Min Cost: {surface_data['cost_min']:.4f} | Max Cost: {surface_data['cost_max']:.4f}</sub>",
             x=0.5
         ),
         width=1600,
         height=800,
         scene=dict(
-            xaxis_title="Column (X)",
-            yaxis_title="Row (Y)",
-            zaxis_title="Cost (Elevation)",
+            xaxis_title="Longitude",
+            yaxis_title="Latitude",
+            zaxis_title="Elevation (m)",
             camera=dict(eye=dict(x=1.5, y=1.5, z=1.2)),
             aspectratio=dict(x=1, y=1, z=0.5)
         ),
         scene2=dict(
-            xaxis_title="Column (X)",
-            yaxis_title="Row (Y)",
-            zaxis_title="Priority (Inverted)",
+            xaxis_title="Longitude",
+            yaxis_title="Latitude",
+            zaxis_title="Priority",
             camera=dict(eye=dict(x=1.5, y=1.5, z=1.2)),
             aspectratio=dict(x=1, y=1, z=0.5)
         ),
@@ -270,18 +306,23 @@ def generate_3d_matplotlib(
     min_row = min_point[0] // subsample
     min_col = min_point[1] // subsample
     
+    # Get anchor GPS coordinates
+    anchor_x = float(X[min_row, min_col])
+    anchor_y = float(Y[min_row, min_col])
+    anchor_z = float(Z[min_row, min_col])
+    
     fig = plt.figure(figsize=(16, 12))
     
     # First subplot: Cost terrain
     ax1 = fig.add_subplot(1, 2, 1, projection='3d')
     surf1 = ax1.plot_surface(X, Y, Z, cmap='RdYlGn_r', alpha=0.9,
                               linewidth=0, antialiased=True)
-    ax1.scatter([min_col], [min_row], [Z[min_row, min_col]], 
+    ax1.scatter([anchor_x], [anchor_y], [anchor_z], 
                 c='cyan', s=100, marker='D', label='Priority Anchor')
-    ax1.set_xlabel('Column (X)')
-    ax1.set_ylabel('Row (Y)')
-    ax1.set_zlabel('Cost')
-    ax1.set_title('Cost Terrain (Red = High Cost Peaks)')
+    ax1.set_xlabel('Longitude')
+    ax1.set_ylabel('Latitude')
+    ax1.set_zlabel('Elevation (m)')
+    ax1.set_title('Terrain with Cost Overlay')
     fig.colorbar(surf1, ax=ax1, shrink=0.5, label='Cost Value')
     
     # Second subplot: Priority view (inverted)
@@ -289,10 +330,10 @@ def generate_3d_matplotlib(
     Z_inverted = surface_data["cost_max"] - Z + surface_data["cost_min"]
     surf2 = ax2.plot_surface(X, Y, Z_inverted, cmap='RdYlGn', alpha=0.9,
                               linewidth=0, antialiased=True)
-    ax2.scatter([min_col], [min_row], [Z_inverted[min_row, min_col]], 
+    ax2.scatter([anchor_x], [anchor_y], [float(Z_inverted[min_row, min_col])], 
                 c='cyan', s=100, marker='D', label='Highest Priority')
-    ax2.set_xlabel('Column (X)')
-    ax2.set_ylabel('Row (Y)')
+    ax2.set_xlabel('Longitude')
+    ax2.set_ylabel('Latitude')
     ax2.set_zlabel('Priority')
     ax2.set_title('Priority View (Green = High Priority)')
     fig.colorbar(surf2, ax=ax2, shrink=0.5, label='Priority Level')
@@ -314,6 +355,7 @@ def build_3d_model(
     output_path: str, # changed from output_dir
     slope_path: Optional[str] = None,
     ndvi_path: Optional[str] = None,
+    elevation_path: Optional[str] = None,
     subsample: int = 1,
     use_plotly: bool = True,
     route_coords: Optional[List[Tuple[float, float]]] = None, # Added
@@ -326,19 +368,26 @@ def build_3d_model(
     # Load optional rasters
     slope = None
     ndvi = None
+    elevation = None
+    
     if slope_path and Path(slope_path).exists():
         slope, _ = load_raster(slope_path)
         logger.info(f"Loaded slope raster: {slope_path}")
     if ndvi_path and Path(ndvi_path).exists():
         ndvi, _ = load_raster(ndvi_path)
         logger.info(f"Loaded NDVI raster: {ndvi_path}")
+    if elevation_path and Path(elevation_path).exists():
+        elevation, _ = load_raster(elevation_path)
+        logger.info(f"Loaded Elevation raster: {elevation_path}")
     
     # Find minimum cost point
     min_point, min_value = find_min_cost_point(cost)
     logger.info(f"Priority anchor (min cost): ({min_point[0]}, {min_point[1]}) = {min_value:.6f}")
     
     # Prepare surface data
-    surface_data = create_3d_surface_data(cost, slope, ndvi, subsample)
+    surface_data = create_3d_surface_data(
+        cost, slope, ndvi, elevation, meta['transform'], subsample
+    )
     
     # Create output directory
     output_file = Path(output_path)
